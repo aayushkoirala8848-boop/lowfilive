@@ -1,0 +1,28 @@
+name: 24/7 Music Stream
+
+on:
+  schedule:
+    # This restarts the stream every 6 hours to stay within GitHub's limits
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # This button lets you start the stream manually at any time
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Media Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Start Streaming
+        env:
+          STREAM_KEY: ${{  }}
+        run: |
+          # Make the script executable and run it
+          chmod +x stream.sh
+          ./stream.sh
