@@ -2,10 +2,11 @@ name: 24/7 Music Stream
 
 on:
   schedule:
-    # This restarts the stream every 6 hours to stay within GitHub's limits
+    # This automatically restarts the stream every 6 hours.
+    # GitHub Actions has a 6-hour runtime limit per job.
     - cron: '0 */6 * * *'
   workflow_dispatch:
-    # This button lets you start the stream manually at any time
+    # This allows you to start the stream manually from the Actions tab.
 
 jobs:
   stream:
@@ -21,8 +22,10 @@ jobs:
 
       - name: Start Streaming
         env:
-          STREAM_KEY: ${{  }}
+          STREAM_KEY: ${{ secrets.STREAM_KEY }}
         run: |
-          # Make the script executable and run it
+          # 1. Give the system permission to run your script
           chmod +x stream.sh
+          
+          # 2. Execute the streaming script
           ./stream.sh
