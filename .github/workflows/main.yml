@@ -1,31 +1,54 @@
-name: 24/7 Music Stream
+name: 24/7 Lo-Fi Music Stream
 
 on:
   schedule:
-    # This automatically restarts the stream every 6 hours.
-    # GitHub Actions has a 6-hour runtime limit per job.
+    # Restart every 5 hours 50 minutes (before GitHub's 6-hour limit)
     - cron: '0 */6 * * *'
   workflow_dispatch:
-    # This allows you to start the stream manually from the Actions tab.
+    # Manual trigger from Actions tab
+  push:
+    branches:
+      - main
+
+# Prevent multiple streams from running simultaneously
+concurrency:
+  group: streaming
+  cancel-in-progress: true
 
 jobs:
   stream:
     runs-on: ubuntu-latest
+    timeout-minutes: 350  # 5 hours 50 minutes
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          lfs: true  # In case you use Git LFS for large files
 
-      - name: Install Media Tools
+      - name: Install FFmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
+          ffmpeg -version
+
+      - name: Verify Files Exist
+        run: |
+          echo "=== Checking required files ==="
+          ls -la
+          echo ""
+          echo "=== Music folder contents ==="
+          ls -la music/
+          echo ""
+          echo "=== Video file info ==="
+          ffprobe -v quiet -show_format -show_streams background.mp4 | head -50
+          echo ""
+          echo "=== Sample audio file info ==="
+          ffprobe -v quiet -show_format -show_streams "music/$(ls music/ | head -1)" | head -30
 
       - name: Start Streaming
         env:
           STREAM_KEY: ${{ secrets.STREAM_KEY }}
         run: |
-          # 1. Give the system permission to run your script
           chmod +x stream.sh
-          
-          # 2. Execute the streaming script
           ./stream.sh
